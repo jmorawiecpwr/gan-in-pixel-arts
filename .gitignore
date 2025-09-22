@@ -1,0 +1,11 @@
+# Ignoruj pliki cache Pythona
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Ignoruj pliki środowisk wirtualnych
+venv/
+.env/
+# Ignoruj pliki systemowe
+.DS_Store
+Thumbs.db

@@ -10,4 +10,4 @@ Po wygenerowaniu wszystkich obrazów, zostały one przetworzone aby każde zdję
 ### Krok 2 - ładowanie danych do modelu
 stworzyliśmy dataloader, który normalizuje wsszystkie zdjęcia do zakresu [-1,1], i wyrzuca je w formie batchy po 64 zdjęcia do modelu, dateset jest podzielony na foldery, gdzie każdy folder to osobna poza, w każdym folderze jest 15922 postaci ustawionych w tej samej kolejności co ułatwia trening modelu.
 ### Krok 3 - Model
-Powstały 3 modele - Wasserstein Gan, który po prostu generuje postacie, Gan typu pix2pix, zbliżony do docelowego planu, początkowo zamienia tylko jedną postać w jedną pozę i finalnie przechodzimy do Gan typu many 2 many który dowolną pozę postaci zamienia na wszystkie inne pozy
+Docelowo chcemy przekształcać ludzika w 1 pozie do 4 innych póz, gdzie użytkownik wybiera jaką chce pozę. Wykorzystamy do tego model GAN typu pix2pix który uczy się 2 wybranych póz aby móc potem transformować jedną pozę w drugą, przez co wystarczy zrobic 4 takie modele dla 4 różych póz (poza startowa jest taka sama dla każdego modelu)
