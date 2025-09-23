@@ -10,14 +10,15 @@ import hiperparametry as hp
 
 class PairedPixelDataset(torch.utils.data.Dataset):
     def __init__(self, folder_0, folder_1, start=0, stop=None):
-        self.data_0 = prep_data(folder_0, start, stop)
+        self.data_0 = prep_data(folder_0, start, stop)  # (H,W,4) w [-1,1]
         self.data_1 = prep_data(folder_1, start, stop)
-        assert len(self.data_0) == len(self.data_1)
+        assert len(self.data_0) == len(self.data_1), "Liczba obrazów w folderach nie jest taka sama." 
 
     def __len__(self):
         return len(self.data_0)
 
     def __getitem__(self, idx):
+        # permute -> (C,H,W); RGBA => 4 kanały
         img0 = torch.tensor(self.data_0[idx], dtype=torch.float).permute(2,0,1)
         img1 = torch.tensor(self.data_1[idx], dtype=torch.float).permute(2,0,1)
         return img0, img1
@@ -33,72 +34,70 @@ train_start = hp.train_start
 train_stop = hp.train_stop
 test_start = hp.test_start
 test_stop = hp.test_stop
-    
-# ===================== Generator  =========================
+# ===================== Model =========================
+
 class UNetGenerator(nn.Module):
-    def __init__(self, in_channels=3, out_channels=3):
+    def __init__(self, in_channels=4, out_channels=4):  # RGBA -> RGBA
         super().__init__()
         self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, 64, 4, 2, 1),  
+            nn.Conv2d(in_channels, 64, 4, 2, 1),  # 48 -> 24
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(64, 128, 4, 2, 1),         
+            nn.Conv2d(64, 128, 4, 2, 1),         # 24 -> 12
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(128, 256, 4, 2, 1),        
+            nn.Conv2d(128, 256, 4, 2, 1),        # 12 -> 6
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2, inplace=True),
         )
         self.middle = nn.Sequential(
-            nn.Conv2d(256, 512, 4, 2, 1),         
-            nn.ReLU(True),)
-        
+            nn.Conv2d(256, 512, 4, 2, 1),        # 6 -> 3
+            nn.ReLU(True),
+        )
         self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(512, 256, 4, 2, 1), 
+            nn.ConvTranspose2d(512, 256, 4, 2, 1),  # 3 -> 6
             nn.BatchNorm2d(256),
             nn.ReLU(True),
 
-            nn.ConvTranspose2d(256, 128, 4, 2, 1), 
+            nn.ConvTranspose2d(256, 128, 4, 2, 1),  # 6 -> 12
             nn.BatchNorm2d(128),
             nn.ReLU(True),
 
-            nn.ConvTranspose2d(128, 64, 4, 2, 1),  
+            nn.ConvTranspose2d(128, 64, 4, 2, 1),   # 12 -> 24
             nn.BatchNorm2d(64),
             nn.ReLU(True),
 
-            nn.ConvTranspose2d(64, out_channels, 4, 2, 1), 
+            nn.ConvTranspose2d(64, out_channels, 4, 2, 1),  # 24 -> 48
             nn.Tanh()
         )
 
     def forward(self, x):
         x = self.encoder(x)
-        x = self.middle(x)
+        # x = self.middle(x)
         x = self.decoder(x)
         return x
 
-
-# ===================== Dyskryminator =========================
 class Discriminator(nn.Module):
-    def __init__(self, in_channels=6):  # input + target
+    def __init__(self, in_channels=8):  # (4 kanały input + 4 kanały target)
         super().__init__()
         self.model = nn.Sequential(
-            nn.Conv2d(in_channels, 64, 4, 2, 1),  
+            nn.Conv2d(in_channels, 64, 4, 2, 1),  # 48 -> 24
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(64, 128, 4, 2, 1),        
+            nn.Conv2d(64, 128, 4, 2, 1),         # 24 -> 12
             nn.BatchNorm2d(128),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(128, 256, 4, 2, 1),       
+            nn.Conv2d(128, 256, 4, 2, 1),        # 12 -> 6
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.2, inplace=True),
 
-            nn.Conv2d(256, 1, 4, 1, 1)          
+            nn.Conv2d(256, 1, 4, 1, 1)           # Patch map
         )
 
     def forward(self, x, y):
-        inp = torch.cat([x, y], dim=1)  
+        inp = torch.cat([x, y], dim=1)
         return self.model(inp)
 
 
