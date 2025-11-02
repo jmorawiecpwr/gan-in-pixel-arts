@@ -11,3 +11,7 @@ Po wygenerowaniu wszystkich obrazów, zostały one przetworzone aby każde zdję
 stworzyliśmy dataloader, który normalizuje wsszystkie zdjęcia do zakresu [-1,1], i wyrzuca je w formie batchy po 64 zdjęcia do modelu, dateset jest podzielony na foldery, gdzie każdy folder to osobna poza, w każdym folderze jest 15922 postaci ustawionych w tej samej kolejności co ułatwia trening modelu.
 ### Krok 3 - Model
 Docelowo chcemy przekształcać ludzika w 1 pozie do 4 innych póz, gdzie użytkownik wybiera jaką chce pozę. Wykorzystamy do tego model GAN typu pix2pix który uczy się 2 wybranych póz aby móc potem transformować jedną pozę w drugą, przez co wystarczy zrobic 4 takie modele dla 4 różych póz (poza startowa jest taka sama dla każdego modelu)
+## Co robią pliki:
+Aby wytrenować model, uruchamiammy plik pix2pix_skip.py, model zostanie zapisany w repo do następnego użycia. Foldery z których model uczy się transformacji z pozy 1 do pozy 2 są ze ścieżek path1 i path2 w hiperparametrach
+Aby wygenerować pozę należy w hiperparametrach zdefiniować skąd pobieramy zdjęcie i gdzie nowe zdjęcie chcemy umieścić, po czym odpalamy plik p2p_generator.
+uwagi: model został wytrenowany dla dosyć dokładnie określonych pixel-artów, najlepszy wynik wychodzi ze zdjęć pochodzących z datasetu, oczywiście tych na których nie uczyliśmy - kilka zdjęć s końca każdego folderu w datasecie jest przeznaczonych do takowego generowania, ich liczbę można zwiększyć w kodzie
