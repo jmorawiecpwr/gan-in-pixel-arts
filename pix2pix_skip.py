@@ -6,13 +6,6 @@ from torch.utils.data import DataLoader
 from prep_functions import prep_data
 import hiperparametry as hp
 
-"""
-Wersja pliku pix2pix z dodanym UNet z skip-connections.
-Nie modyfikuje oryginalnego pliku; można trenować wywołując train_pix2pix_skip.
-Architektura: 48x48 -> 24 -> 12 -> 6 (bottleneck bez dalszego zmniejszania do 3) -> upsample.
-Skipy pomiędzy warstwami na 24 i 12 oraz wejściową 48 po rekonstrukcji.
-"""
-
 # ===================== Dataset =========================
 class PairedPixelDataset(torch.utils.data.Dataset):
     def __init__(self, folder_0, folder_1, start=0, stop=None):
